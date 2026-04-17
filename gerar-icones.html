@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Gerar ícones</title></head>
+<body>
+<p>Clique nos botões para baixar os ícones. Salve como <b>icon-192.png</b> e <b>icon-512.png</b> na mesma pasta do app.</p>
+<br>
+<button onclick="gen(192)">Baixar icon-192.png</button>
+<button onclick="gen(512)">Baixar icon-512.png</button>
+<canvas id="c" style="display:block;margin-top:16px;border:1px solid #ccc;"></canvas>
+
+<script>
+function gen(size) {
+  const c = document.getElementById('c');
+  c.width = size; c.height = size;
+  const ctx = c.getContext('2d');
+
+  // Fundo verde escuro
+  ctx.fillStyle = '#27500A';
+  roundRect(ctx, 0, 0, size, size, size * 0.22);
+  ctx.fill();
+
+  // Círculo claro
+  ctx.fillStyle = '#EAF3DE';
+  ctx.beginPath();
+  ctx.arc(size/2, size * 0.44, size * 0.28, 0, Math.PI*2);
+  ctx.fill();
+
+  // Símbolo Delta (Δ)
+  ctx.fillStyle = '#27500A';
+  ctx.font = `bold ${size * 0.38}px Georgia, serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('Δ', size/2, size * 0.44);
+
+  // Texto "T" sobrescrito — linha inferior
+  ctx.fillStyle = '#C0DD97';
+  ctx.font = `bold ${size * 0.16}px -apple-system, sans-serif`;
+  ctx.fillText('DELTA T', size/2, size * 0.8);
+
+  // Download
+  const a = document.createElement('a');
+  a.download = `icon-${size}.png`;
+  a.href = c.toDataURL('image/png');
+  a.click();
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+</script>
+</body>
+</html>

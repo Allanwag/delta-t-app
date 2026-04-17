@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Delta T">
+<meta name="theme-color" content="#f8f7f4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1a1a18" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Delta T — Pulverização</title>
+<style>
+  :root {
+    --green-50: #EAF3DE; --green-100: #C0DD97; --green-600: #3B6D11; --green-800: #27500A;
+    --amber-50: #FAEEDA; --amber-100: #FAC775; --amber-600: #854F0B; --amber-800: #633806;
+    --red-50: #FCEBEB; --red-100: #F7C1C1; --red-600: #A32D2D; --red-800: #791F1F;
+    --blue-50: #E6F1FB; --blue-600: #185FA5; --blue-800: #0C447C;
+    --teal-50: #E1F5EE; --teal-600: #0F6E56; --teal-800: #085041;
+    --gray-50: #F1EFE8; --gray-100: #D3D1C7; --gray-400: #888780; --gray-600: #5F5E5A; --gray-800: #2C2C2A;
+    --bg: #f8f7f4; --surface: #ffffff; --surface2: #f1efe8;
+    --text: #1a1a18; --text2: #5f5e5a; --text3: #888780;
+    --border: rgba(0,0,0,0.10); --border2: rgba(0,0,0,0.18);
+    --radius: 14px; --radius-sm: 8px;
+    --font: 'Georgia', serif;
+    --font-sans: -apple-system, 'Helvetica Neue', sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a18; --surface: #242422; --surface2: #2c2c2a;
+      --text: #f1efe8; --text2: #b4b2a9; --text3: #888780;
+      --border: rgba(255,255,255,0.10); --border2: rgba(255,255,255,0.18);
+      --green-50: #173404; --green-100: #27500A; --green-600: #97C459; --green-800: #C0DD97;
+      --amber-50: #412402; --amber-100: #633806; --amber-600: #EF9F27; --amber-800: #FAC775;
+      --red-50: #501313; --red-100: #791F1F; --red-600: #F09595; --red-800: #F7C1C1;
+      --blue-50: #042C53; --blue-600: #85B7EB; --blue-800: #B5D4F4;
+      --teal-50: #04342C; --teal-600: #5DCAA5; --teal-800: #9FE1CB;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html { font-size: 16px; }
+  body {
+    font-family: var(--font-sans);
+    background: var(--bg); color: var(--text);
+    min-height: 100vh; padding-bottom: 2rem;
+  }
+
+  .app-header {
+    background: var(--surface);
+    border-bottom: 0.5px solid var(--border);
+    padding: 1rem 1.25rem 0.875rem;
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .app-title { font-size: 17px; font-weight: 600; letter-spacing: -0.02em; color: var(--text); }
+  .app-sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
+  .header-badge {
+    font-size: 11px; font-weight: 600; padding: 4px 10px;
+    border-radius: 20px; border: none; cursor: pointer;
+    background: var(--surface2); color: var(--text2);
+    font-family: var(--font-sans);
+  }
+
+  .nav-tabs {
+    display: flex; background: var(--surface);
+    border-bottom: 0.5px solid var(--border);
+    overflow-x: auto; -webkit-overflow-scrolling: touch;
+  }
+  .nav-tab {
+    flex: 1; padding: 0.75rem 0.5rem;
+    text-align: center; font-size: 12px; font-weight: 500;
+    color: var(--text3); border: none; background: none;
+    border-bottom: 2px solid transparent; cursor: pointer;
+    white-space: nowrap; font-family: var(--font-sans);
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .nav-tab.active { color: var(--text); border-bottom-color: var(--text); }
+
+  .page { display: none; padding: 1rem 1rem 0; }
+  .page.active { display: block; }
+
+  .section { margin-bottom: 1rem; }
+  .section-label {
+    font-size: 11px; font-weight: 600; color: var(--text3);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin-bottom: 0.625rem;
+  }
+
+  .slider-card {
+    background: var(--surface); border-radius: var(--radius);
+    border: 0.5px solid var(--border); overflow: hidden;
+  }
+  .slider-row {
+    padding: 0.875rem 1rem;
+    border-bottom: 0.5px solid var(--border);
+  }
+  .slider-row:last-child { border-bottom: none; }
+  .slider-top {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 0.5rem;
+  }
+  .slider-name { font-size: 13px; color: var(--text2); }
+  .slider-val { font-size: 20px; font-weight: 600; color: var(--text); letter-spacing: -0.02em; }
+  .slider-unit { font-size: 12px; font-weight: 400; color: var(--text3); }
+
+  input[type=range] {
+    -webkit-appearance: none; width: 100%; height: 4px;
+    background: var(--border2); border-radius: 2px; outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 24px; height: 24px;
+    border-radius: 50%; background: var(--text);
+    cursor: pointer; border: none;
+  }
+
+  .result-hero {
+    background: var(--surface); border-radius: var(--radius);
+    border: 0.5px solid var(--border);
+    padding: 1.25rem; margin-bottom: 1rem;
+    text-align: center; position: relative; overflow: hidden;
+  }
+  .result-hero::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    background: var(--hero-color, #639922);
+  }
+  .result-delta-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.25rem; }
+  .result-delta-value { font-size: 56px; font-weight: 700; letter-spacing: -0.04em; line-height: 1; }
+  .result-delta-unit { font-size: 18px; font-weight: 400; color: var(--text3); }
+  .result-status-badge {
+    display: inline-block; font-size: 13px; font-weight: 600;
+    padding: 5px 14px; border-radius: 20px; margin-top: 0.75rem;
+  }
+  .result-advice {
+    margin-top: 0.875rem; font-size: 13px; line-height: 1.6;
+    color: var(--text2); text-align: left;
+    background: var(--surface2); border-radius: var(--radius-sm);
+    padding: 0.75rem;
+  }
+
+  .metrics-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 1rem; }
+  .metric-card {
+    background: var(--surface); border-radius: var(--radius-sm);
+    border: 0.5px solid var(--border); padding: 0.75rem 0.625rem;
+    text-align: center;
+  }
+  .metric-label { font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.04em; }
+  .metric-value { font-size: 16px; font-weight: 600; color: var(--text); margin-top: 3px; }
+  .metric-unit { font-size: 10px; color: var(--text3); font-weight: 400; }
+
+  .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 1rem; }
+  .product-btn {
+    background: var(--surface); border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm); padding: 0.75rem;
+    text-align: left; cursor: pointer; font-family: var(--font-sans);
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .product-btn.active { border-color: var(--text); background: var(--surface2); }
+  .product-btn-icon { font-size: 18px; margin-bottom: 4px; display: block; }
+  .product-btn-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .product-btn-sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
+
+  .product-advice-card {
+    background: var(--surface); border-radius: var(--radius);
+    border: 0.5px solid var(--border); padding: 1rem;
+    margin-bottom: 1rem;
+  }
+  .product-advice-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 0.5rem; }
+  .product-advice-item {
+    font-size: 12px; color: var(--text2); line-height: 1.6;
+    padding: 0.375rem 0; border-bottom: 0.5px solid var(--border);
+    display: flex; gap: 8px; align-items: flex-start;
+  }
+  .product-advice-item:last-child { border-bottom: none; }
+  .pai-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text3); flex-shrink: 0; margin-top: 5px; }
+
+  .wind-card {
+    background: var(--surface); border-radius: var(--radius);
+    border: 0.5px solid var(--border); padding: 1rem; margin-bottom: 1rem;
+  }
+  .wind-bar-wrap { display: flex; align-items: center; gap: 10px; margin: 0.75rem 0 0.5rem; }
+  .wind-bar-bg { flex: 1; height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+  .wind-bar-fill { height: 100%; border-radius: 4px; transition: width 0.3s, background 0.3s; }
+  .wind-zones {
+    display: flex; font-size: 10px; color: var(--text3);
+    justify-content: space-between; margin-top: 2px;
+  }
+
+  .table-wrap { overflow-x: auto; background: var(--surface); border-radius: var(--radius); border: 0.5px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 380px; }
+  th {
+    font-weight: 600; color: var(--text3); padding: 7px 6px;
+    text-align: center; border-bottom: 0.5px solid var(--border);
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em;
+    background: var(--surface2);
+  }
+  td {
+    padding: 5px 6px; text-align: center;
+    border-bottom: 0.5px solid var(--border); font-size: 11px;
+    color: var(--text);
+  }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { font-weight: 600; color: var(--text2); text-align: left; background: var(--surface2); }
+  .ci { background: var(--green-50); color: var(--green-800); font-weight: 600; border-radius: 4px; }
+  .cc { background: var(--amber-50); color: var(--amber-800); font-weight: 600; border-radius: 4px; }
+  .cr { background: var(--red-50); color: var(--red-800); font-weight: 600; border-radius: 4px; }
+  .ccur { outline: 2px solid #378ADD; border-radius: 4px; }
+
+  .history-empty {
+    text-align: center; padding: 2.5rem 1rem;
+    font-size: 14px; color: var(--text3);
+  }
+  .history-item {
+    background: var(--surface); border-radius: var(--radius);
+    border: 0.5px solid var(--border); padding: 0.875rem 1rem;
+    margin-bottom: 0.625rem; display: flex; align-items: center; gap: 12px;
+  }
+  .hi-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .hi-main { flex: 1; }
+  .hi-dt { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+  .hi-meta { font-size: 11px; color: var(--text3); margin-top: 1px; }
+  .hi-time { font-size: 11px; color: var(--text3); text-align: right; }
+  .hi-product { font-size: 11px; color: var(--text2); font-weight: 500; }
+
+  .save-btn {
+    width: 100%; padding: 0.9rem; font-size: 15px; font-weight: 600;
+    background: var(--text); color: var(--bg);
+    border: none; border-radius: var(--radius); cursor: pointer;
+    font-family: var(--font-sans); margin-bottom: 1rem;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: opacity 0.15s;
+  }
+  .save-btn:active { opacity: 0.75; }
+
+  .clear-btn {
+    width: 100%; padding: 0.75rem; font-size: 13px; font-weight: 500;
+    background: none; color: var(--red-600);
+    border: 0.5px solid var(--red-600); border-radius: var(--radius-sm);
+    cursor: pointer; font-family: var(--font-sans); margin-bottom: 1rem;
+  }
+
+  .legend { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 1rem; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text2); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 2px; }
+
+  .s-ideal { color: var(--green-800); background: var(--green-50); }
+  .s-caution { color: var(--amber-800); background: var(--amber-50); }
+  .s-risk { color: var(--red-800); background: var(--red-50); }
+  .s-low { color: var(--blue-800); background: var(--blue-50); }
+  .dot-ideal { background: #639922; }
+  .dot-caution { background: #BA7517; }
+  .dot-risk { background: #A32D2D; }
+  .dot-low { background: #185FA5; }
+
+  /* Toast de instalação */
+  #installToast {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: var(--text); color: var(--bg);
+    padding: 12px 20px; border-radius: 24px;
+    font-size: 13px; font-weight: 500;
+    display: flex; align-items: center; gap: 10px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    z-index: 999; cursor: pointer;
+    animation: slideUp 0.3s ease;
+    max-width: calc(100vw - 40px);
+  }
+  #installToast.hidden { display: none; }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
+
+  /* Banner offline */
+  #offlineBanner {
+    background: var(--amber-50); color: var(--amber-800);
+    text-align: center; font-size: 12px; font-weight: 500;
+    padding: 6px; display: none;
+    border-bottom: 0.5px solid var(--amber-100);
+  }
+</style>
+</head>
+<body>
+
+<div id="offlineBanner">Sem conexão — modo offline ativo</div>
+
+<div class="app-header">
+  <div>
+    <div class="app-title">Delta T</div>
+    <div class="app-sub">Janela de Pulverização</div>
+  </div>
+  <div id="headerStatus" class="header-badge">—</div>
+</div>
+
+<div class="nav-tabs">
+  <button class="nav-tab active" onclick="showPage('calc', this)">Calculadora</button>
+  <button class="nav-tab" onclick="showPage('produto', this)">Produto</button>
+  <button class="nav-tab" onclick="showPage('tabela', this)">Tabela</button>
+  <button class="nav-tab" onclick="showPage('historico', this)">Histórico</button>
+</div>
+
+<!-- PAGE: CALCULADORA -->
+<div id="page-calc" class="page active">
+
+  <div class="section" style="margin-top: 1rem;">
+    <div class="section-label">Condições atuais</div>
+    <div class="slider-card">
+      <div class="slider-row">
+        <div class="slider-top">
+          <span class="slider-name">Temperatura</span>
+          <span class="slider-val" id="vTemp">26<span class="slider-unit"> °C</span></span>
+        </div>
+        <input type="range" id="temp" min="5" max="45" step="0.5" value="26" oninput="update()">
+      </div>
+      <div class="slider-row">
+        <div class="slider-top">
+          <span class="slider-name">Umidade Relativa</span>
+          <span class="slider-val" id="vRh">55<span class="slider-unit"> %UR</span></span>
+        </div>
+        <input type="range" id="rh" min="10" max="100" step="1" value="55" oninput="update()">
+      </div>
+      <div class="slider-row">
+        <div class="slider-top">
+          <span class="slider-name">Velocidade do Vento</span>
+          <span class="slider-val" id="vWind">8<span class="slider-unit"> km/h</span></span>
+        </div>
+        <input type="range" id="wind" min="0" max="30" step="0.5" value="8" oninput="update()">
+      </div>
+    </div>
+  </div>
+
+  <div id="resultHero" class="result-hero">
+    <div class="result-delta-label">Delta T</div>
+    <div class="result-delta-value" id="dtBig">—<span class="result-delta-unit">°C</span></div>
+    <div><span class="result-status-badge" id="statusBadge"></span></div>
+    <div class="result-advice" id="adviceMain"></div>
+  </div>
+
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-label">Bulbo Úmido</div>
+      <div class="metric-value" id="mWet">—</div>
+      <div class="metric-unit">°C</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Orvalho</div>
+      <div class="metric-value" id="mDew">—</div>
+      <div class="metric-unit">°C</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">VPD</div>
+      <div class="metric-value" id="mVpd">—</div>
+      <div class="metric-unit">kPa</div>
+    </div>
+  </div>
+
+  <div class="wind-card">
+    <div class="section-label" style="margin-bottom:0;">Condição do vento</div>
+    <div class="wind-bar-wrap">
+      <div class="wind-bar-bg"><div class="wind-bar-fill" id="windBar"></div></div>
+      <span style="font-size:13px; font-weight:600; color:var(--text); min-width:32px;" id="windPct"></span>
+    </div>
+    <div class="wind-zones">
+      <span>Calmo</span><span>Ideal</span><span>Atenção</span><span>Risco</span>
+    </div>
+    <div class="result-advice" id="windAdvice" style="margin-top:0.75rem;"></div>
+  </div>
+
+  <button class="save-btn" onclick="saveReading()">
+    <span>&#43;</span> Salvar esta leitura
+  </button>
+
+</div>
+
+<!-- PAGE: PRODUTO -->
+<div id="page-produto" class="page">
+  <div style="margin-top:1rem;">
+    <div class="section-label">Tipo de produto</div>
+    <div class="product-grid" id="productGrid"></div>
+    <div class="section-label">Orientações específicas</div>
+    <div class="product-advice-card" id="productAdvice"></div>
+  </div>
+</div>
+
+<!-- PAGE: TABELA -->
+<div id="page-tabela" class="page">
+  <div style="margin-top:1rem; margin-bottom:0.625rem;">
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--green-50);border:1px solid var(--green-600);"></div>Ideal (2–8°C)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--amber-50);border:1px solid var(--amber-600);"></div>Limiar (8–10°C)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--red-50);border:1px solid var(--red-600);"></div>Crítico</div>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:0.75rem;">Borda azul = sua condição atual</div>
+  </div>
+  <div class="table-wrap" id="tableWrap"></div>
+</div>
+
+<!-- PAGE: HISTÓRICO -->
+<div id="page-historico" class="page">
+  <div style="margin-top:1rem;" id="histList"></div>
+  <button class="clear-btn" onclick="clearHistory()">Limpar histórico</button>
+</div>
+
+<!-- Toast de instalação -->
+<div id="installToast" class="hidden">
+  <span>&#8595;</span>
+  <span>Instalar Delta T no celular</span>
+</div>
+
+<script>
+const products = [
+  { id: 'herb-cont', icon: '🌿', name: 'Herbicida contato', sub: 'Glifosato, Paraquat',
+    ranges: { safe: [2,6], caution: [6,8], max: 10 },
+    tips: [
+      'Delta T máximo recomendado: 8°C. Produtos de contato evaporam antes da absorção acima desse limiar.',
+      'Herbicidas de contato exigem cobertura total — gotas finas (VMD 150–250 µm). Maior exposição à deriva.',
+      'Glifosato: intervalo mínimo de 6h sem chuva após aplicação. Não aplicar com vento > 10 km/h.',
+      'Horário ideal: entre 6h e 10h. Evitar 11h–15h mesmo com Delta T aceitável.',
+      'Antagonismo: não misturar com adubos foliares de alta concentração salina na mesma calda.',
+    ]
+  },
+  { id: 'herb-sist', icon: '🔬', name: 'Herbicida sistêmico', sub: '2,4-D, Dicamba, Fluroxipir',
+    ranges: { safe: [2,8], caution: [8,10], max: 12 },
+    tips: [
+      'Delta T até 8°C ideal. Estes produtos têm maior janela que de contato por absorção via xilema.',
+      '2,4-D e Dicamba: alta volatilidade em temperaturas > 28°C. Delta T deve ser < 6°C nesses casos.',
+      'Distância mínima de 500m de culturas sensíveis (soja, algodão, tomate, uva).',
+      'Vento: máximo 10 km/h para estes produtos. Deriva a quilômetros em temperatura alta.',
+      'Inversão térmica (Delta T < 2°C, vento calmo) é a pior condição — produto flutua horas no ar.',
+    ]
+  },
+  { id: 'fung', icon: '🍄', name: 'Fungicida', sub: 'Triazóis, Estrobilurinas',
+    ranges: { safe: [2,10], caution: [10,12], max: 14 },
+    tips: [
+      'Fungicidas têm maior tolerância ao Delta T — até 10°C ainda é aceitável com gotas médias.',
+      'Triazóis (tebuconazol, epoxiconazol): absorção foliar em 2–4h. Priorizar antes de chuva prevista.',
+      'Estrobilurinas (azoxistrobina, picoxistrobina): fotodegradação em alta irradiância — evitar aplicação plena.',
+      'Mistura Triazol + Estrobilurina: usar VMD 250–350 µm, adjuvante espalhante-penetrante.',
+      'Café especial de altitude: aplicar no resfriamento vespertino (16h–18h) — menor irradiância UV.',
+    ]
+  },
+  { id: 'insec', icon: '🐛', name: 'Inseticida', sub: 'Piretroides, OP, Neonicotinoides',
+    ranges: { safe: [2,8], caution: [8,11], max: 13 },
+    tips: [
+      'Piretroides: altamente sensíveis à temperatura. Acima de 30°C com Delta T > 8°C: eficácia reduzida > 30%.',
+      'Organofosforados: aplicar sempre em Delta T < 8°C para garantir absorção cuticular adequada.',
+      'Neonicotinoides (imidacloprido, tiametoxam): sistêmicos, maior janela de Delta T — até 10°C.',
+      'Evitar aplicação em floração: risco para polinizadores. Preferir horários de menor atividade (> 18h).',
+      'Bioinseticidas (Bacillus thuringiensis): temperatura da gota > 38°C mata UFC. Delta T < 5°C.',
+    ]
+  },
+  { id: 'adub', icon: '🌱', name: 'Adubo foliar', sub: 'Micronutrientes, aminoácidos',
+    ranges: { safe: [2,7], caution: [7,9], max: 11 },
+    tips: [
+      'Nutrição foliar exige Delta T ≤ 7°C para absorção eficaz via estômatos abertos.',
+      'Estômatos fecham em alta temperatura e baixa UR — exatamente quando Delta T é alto.',
+      'Boro, zinco e manganês: absorção rápida (< 1h). Horário: 6h–9h ou após 17h.',
+      'Aminoácidos e bioestimulantes: sensíveis a UV e temperatura. Delta T < 5°C ideal.',
+      'Não misturar sulfatos metálicos com fosfitos em pH > 6,5 — precipitação imediata.',
+    ]
+  },
+  { id: 'cobre', icon: '🟤', name: 'Cúprico / Calda', sub: 'Hidróxido de cobre, Calda Bordalesa',
+    ranges: { safe: [2,10], caution: [10,13], max: 15 },
+    tips: [
+      'Caldas cúpricas toleram Delta T mais alto por ser produto de cobertura, não absorção.',
+      'Calda Bordalesa: não aplicar com temperatura > 35°C — risco de fitotoxicidade por cobre livre.',
+      'Hidróxido de cobre (Kocide, Cupronil): usar volume ≥ 400 L/ha no café para cobertura completa.',
+      'Não misturar com óleos emulsionáveis em pH < 5,5 — instabilidade e fitotoxicidade.',
+      'Poço artesiano pH 7,5: obrigatório corrigir para 5,5–6,5 antes de qualquer calda cúprica.',
+    ]
+  },
+];
+
+let selectedProduct = 'herb-cont';
+let history = JSON.parse(localStorage.getItem('dt_history') || '[]');
+
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (id === 'tabela') buildTable();
+  if (id === 'historico') renderHistory();
+}
+
+function calcWetBulb(T, rh) {
+  return T * Math.atan(0.151977 * Math.pow(rh + 8.313659, 0.5))
+    + Math.atan(T + rh) - Math.atan(rh - 1.676331)
+    + 0.00391838 * Math.pow(rh, 1.5) * Math.atan(0.023101 * rh) - 4.686035;
+}
+function calcDewPoint(T, rh) {
+  const a = 17.27, b = 237.7;
+  const alpha = ((a * T) / (b + T)) + Math.log(rh / 100);
+  return (b * alpha) / (a - alpha);
+}
+function calcVPD(T, rh) {
+  const es = 0.6108 * Math.exp((17.27 * T) / (T + 237.3));
+  return (es - es * (rh / 100)).toFixed(2);
+}
+
+function getDTStatus(dt) {
+  if (dt < 2) return { label: 'UR muito alta', cls: 's-low', dot: 'dot-low', color: '#185FA5',
+    advice: '<b>Delta T abaixo de 2°C.</b> Umidade excessiva — risco de inversão térmica, deriva descendente e condições favoráveis a doenças. Evitar pulverização.' };
+  if (dt <= 8) return { label: 'Condição ideal', cls: 's-ideal', dot: 'dot-ideal', color: '#639922',
+    advice: '<b>Janela ideal de aplicação (2–8°C).</b> Boa evaporação da gota, mínima deriva e cobertura uniforme. Prosseguir com a aplicação.' };
+  if (dt <= 10) return { label: 'Limiar — atenção', cls: 's-caution', dot: 'dot-caution', color: '#BA7517',
+    advice: '<b>Delta T no limiar superior (8–10°C).</b> Evaporação elevada — risco de volatilização de herbicidas e queda de eficiência. Aplicar só em horários frescos com gotas maiores.' };
+  return { label: 'Crítico — suspender', cls: 's-risk', dot: 'dot-risk', color: '#A32D2D',
+    advice: '<b>Delta T acima de 10°C — condição crítica.</b> Evaporação extrema antes da deposição. Herbicidas de contato perdem eficiência drasticamente. Suspender e aguardar Delta T ≤ 8°C.' };
+}
+
+function getWindStatus(w) {
+  if (w < 3) return { pct: (w/30)*100, color: '#185FA5',
+    text: '<b>Vento calmo (< 3 km/h).</b> Risco de inversão térmica e acúmulo localizado de produto. Em nebulizações finas, gotículas podem subir. Monitorar condições.' };
+  if (w <= 15) return { pct: (w/30)*100, color: '#639922',
+    text: '<b>Vento ideal (3–15 km/h).</b> Boa dispersão sem deriva significativa. Condição favorável para pulverização.' };
+  if (w <= 20) return { pct: (w/30)*100, color: '#BA7517',
+    text: '<b>Vento no limite (15–20 km/h).</b> Risco moderado de deriva. Aumentar VMD (≥ 350 µm), reduzir pressão e evitar áreas com culturas sensíveis no entorno.' };
+  return { pct: Math.min((w/30)*100, 100), color: '#A32D2D',
+    text: '<b>Vento excessivo (> 20 km/h).</b> Deriva inaceitável. Suspender imediatamente. Risco fitotóxico em culturas vizinhas e perda de eficiência > 40%.' };
+}
+
+function update() {
+  const T = parseFloat(document.getElementById('temp').value);
+  const rh = parseFloat(document.getElementById('rh').value);
+  const w = parseFloat(document.getElementById('wind').value);
+
+  document.getElementById('vTemp').innerHTML = T.toFixed(1) + '<span class="slider-unit"> °C</span>';
+  document.getElementById('vRh').innerHTML = rh + '<span class="slider-unit"> %UR</span>';
+  document.getElementById('vWind').innerHTML = w.toFixed(1) + '<span class="slider-unit"> km/h</span>';
+
+  const wb = calcWetBulb(T, rh);
+  const dt = T - wb;
+  const dp = calcDewPoint(T, rh);
+  const vpd = calcVPD(T, rh);
+
+  document.getElementById('mWet').textContent = wb.toFixed(1);
+  document.getElementById('mDew').textContent = dp.toFixed(1);
+  document.getElementById('mVpd').textContent = vpd;
+
+  const s = getDTStatus(dt);
+  document.getElementById('dtBig').innerHTML = dt.toFixed(1) + '<span class="result-delta-unit">°C</span>';
+  document.getElementById('statusBadge').textContent = s.label;
+  document.getElementById('statusBadge').className = 'result-status-badge ' + s.cls;
+  document.getElementById('adviceMain').innerHTML = s.advice;
+  document.getElementById('resultHero').style.setProperty('--hero-color', s.color);
+  document.getElementById('headerStatus').textContent = 'ΔT ' + dt.toFixed(1) + '°C';
+
+  const ws = getWindStatus(w);
+  document.getElementById('windBar').style.width = ws.pct + '%';
+  document.getElementById('windBar').style.background = ws.color;
+  document.getElementById('windPct').textContent = w.toFixed(0);
+  document.getElementById('windAdvice').innerHTML = ws.text;
+
+  updateProductAdvice();
+}
+
+function buildProductGrid() {
+  const grid = document.getElementById('productGrid');
+  grid.innerHTML = '';
+  products.forEach(p => {
+    const btn = document.createElement('button');
+    btn.className = 'product-btn' + (p.id === selectedProduct ? ' active' : '');
+    btn.innerHTML = `<span class="product-btn-icon">${p.icon}</span><div class="product-btn-name">${p.name}</div><div class="product-btn-sub">${p.sub}</div>`;
+    btn.onclick = () => { selectedProduct = p.id; buildProductGrid(); updateProductAdvice(); };
+    grid.appendChild(btn);
+  });
+}
+
+function updateProductAdvice() {
+  const T = parseFloat(document.getElementById('temp').value);
+  const rh = parseFloat(document.getElementById('rh').value);
+  const wb = calcWetBulb(T, rh);
+  const dt = T - wb;
+
+  const p = products.find(x => x.id === selectedProduct);
+  if (!p) return;
+
+  let dtStatus, dtColor;
+  if (dt < 2) { dtStatus = 'Abaixo do mínimo — risco de deriva descendente'; dtColor = 'var(--blue-800)'; }
+  else if (dt <= p.ranges.safe[1]) { dtStatus = 'Dentro da janela segura para este produto'; dtColor = 'var(--green-800)'; }
+  else if (dt <= p.ranges.caution[1]) { dtStatus = 'No limiar — monitorar de perto'; dtColor = 'var(--amber-800)'; }
+  else { dtStatus = 'Acima do limite recomendado — suspender'; dtColor = 'var(--red-800)'; }
+
+  const adv = document.getElementById('productAdvice');
+  adv.innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.75rem;">
+      <span style="font-size:20px;">${p.icon}</span>
+      <div>
+        <div class="product-advice-title">${p.name}</div>
+        <div style="font-size:12px;color:${dtColor};font-weight:600;">${dtStatus}</div>
+        <div style="font-size:11px;color:var(--text3);">Janela segura: ${p.ranges.safe[0]}–${p.ranges.safe[1]}°C | Limite: ${p.ranges.max}°C</div>
+      </div>
+    </div>
+    ${p.tips.map(t => `<div class="product-advice-item"><div class="pai-dot"></div><span>${t}</span></div>`).join('')}
+  `;
+}
+
+function buildTable() {
+  const T = parseFloat(document.getElementById('temp').value);
+  const rh = parseFloat(document.getElementById('rh').value);
+  const temps = [15, 20, 25, 28, 30, 33, 35, 40];
+  const rhs = [20, 30, 40, 50, 60, 70, 80, 90];
+
+  let html = '<table><thead><tr><th>UR\\T</th>' + temps.map(t => `<th>${t}°</th>`).join('') + '</tr></thead><tbody>';
+  rhs.forEach(r => {
+    html += `<tr><td>${r}%</td>`;
+    temps.forEach(t => {
+      const wb = calcWetBulb(t, r);
+      const dt = t - wb;
+      let cls = '';
+      if (dt >= 2 && dt <= 8) cls = 'ci';
+      else if (dt > 8 && dt <= 10) cls = 'cc';
+      else if (dt > 10) cls = 'cr';
+      const isCur = Math.abs(t - T) <= 2.5 && Math.abs(r - rh) <= 5;
+      html += `<td class="${cls}${isCur ? ' ccur' : ''}">${dt.toFixed(1)}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  document.getElementById('tableWrap').innerHTML = html;
+}
+
+function saveReading() {
+  const T = parseFloat(document.getElementById('temp').value);
+  const rh = parseFloat(document.getElementById('rh').value);
+  const w = parseFloat(document.getElementById('wind').value);
+  const wb = calcWetBulb(T, rh);
+  const dt = T - wb;
+  const s = getDTStatus(dt);
+  const p = products.find(x => x.id === selectedProduct);
+  const now = new Date();
+  const entry = {
+    dt: dt.toFixed(1), T, rh, w,
+    status: s.label, dot: s.dot,
+    product: p ? p.name : '—',
+    time: now.toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }),
+    ts: now.getTime()
+  };
+  history.unshift(entry);
+  if (history.length > 50) history = history.slice(0, 50);
+  localStorage.setItem('dt_history', JSON.stringify(history));
+
+  const btn = document.querySelector('.save-btn');
+  btn.textContent = '✓ Salvo!';
+  setTimeout(() => { btn.innerHTML = '<span>&#43;</span> Salvar esta leitura'; }, 1500);
+}
+
+function renderHistory() {
+  const list = document.getElementById('histList');
+  if (!history.length) {
+    list.innerHTML = '<div class="history-empty">Nenhuma leitura salva ainda.<br>Use o botão "Salvar esta leitura".</div>';
+    return;
+  }
+  list.innerHTML = history.map(e => `
+    <div class="history-item">
+      <div class="hi-dot ${e.dot}"></div>
+      <div class="hi-main">
+        <div class="hi-dt">${e.dt}°C <span style="font-size:12px;font-weight:400;color:var(--text3);">${e.status}</span></div>
+        <div class="hi-meta">T: ${e.T}°C · UR: ${e.rh}% · Vento: ${e.w} km/h</div>
+        <div class="hi-product">${e.product}</div>
+      </div>
+      <div class="hi-time">${e.time}</div>
+    </div>
+  `).join('');
+}
+
+function clearHistory() {
+  if (!confirm('Limpar todo o histórico de leituras?')) return;
+  history = [];
+  localStorage.removeItem('dt_history');
+  renderHistory();
+}
+
+// --- PWA: Service Worker ---
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+
+// --- PWA: Prompt de instalação ---
+let deferredPrompt;
+const installToast = document.getElementById('installToast');
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  installToast.classList.remove('hidden');
+});
+installToast.addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  installToast.classList.add('hidden');
+});
+window.addEventListener('appinstalled', () => {
+  installToast.classList.add('hidden');
+});
+
+// --- Offline banner ---
+function updateOnlineStatus() {
+  document.getElementById('offlineBanner').style.display = navigator.onLine ? 'none' : 'block';
+}
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+updateOnlineStatus();
+
+buildProductGrid();
+update();
+</script>
+</body>
+</html>
