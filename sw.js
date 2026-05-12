@@ -1,4 +1,4 @@
-const CACHE = 'delta-t-v1';
+const CACHE = 'delta-t-v2';
 const ASSETS = [
   './',
   './index.html',
